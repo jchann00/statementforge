@@ -4,7 +4,7 @@ const path = require('path');
 const distDir = path.join(__dirname, 'dist');
 if (!fs.existsSync(distDir)) fs.mkdirSync(distDir, { recursive: true });
 
-const filesToCopy = ['index.html', 'styles.css', 'app.js', '_redirects', 'robots.txt'];
+const filesToCopy = ['index.html', 'styles.css', 'app.js', '_redirects', 'robots.txt', 'googleeae2dbdd1057a6b1.html'];
 filesToCopy.forEach(f => {
   const p = path.join(__dirname, f);
   if (fs.existsSync(p)) {
