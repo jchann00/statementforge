@@ -4,7 +4,13 @@
   command = "node build.js"
   publish = "dist"
 
-# SPA Routing: Ensure all subpaths, hashes, and client routes fall back to index.html with HTTP 200
+# Google Search Console Verification File Pass-through
+[[redirects]]
+  from = "/googleeae2dbdd1057a6b1.html"
+  to = "/googleeae2dbdd1057a6b1.html"
+  status = 200
+
+# SPA Routing: Ensure all other subpaths fall back to index.html with HTTP 200
 [[redirects]]
   from = "/*"
   to = "/index.html"
