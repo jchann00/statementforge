@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StatementForge AI &mdash; Autonomous Bank Statement PDF to Excel, CSV & QBO Converter</title>
+  <meta name="description" content="Convert digital or scanned bank & credit card statements from PDF to Excel (.xlsx), CSV, and QuickBooks (.QBO/OFX) in seconds. 99.8% OCR accuracy with automated mathematical reconciliation.">
+  <meta property="og:title" content="StatementForge AI - Global Bank Statement to Excel & QBO Engine">
+  <meta property="og:description" content="Stop manual data entry. Extract transactions from locked PDF bank statements to Excel, CSV, and QuickBooks with zero mathematical discrepancies.">
+  <meta property="og:type" content="website">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Cache Busting & Fresh Fetch Directives -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
+  <!-- Instant Fast-Path Modal Controller (Resilient against any script delay or cache) -->
+  <script>
+    window.openAccountModal = function() {
+      var m = document.getElementById('account-modal');
+      if (m) {
+        m.classList.remove('hidden');
+        m.style.display = 'flex';
+      }
+    };
+    window.openAuthModal = function(tab) {
+      var m = document.getElementById('auth-modal');
+      if (m) {
+        m.classList.remove('hidden');
+        m.style.display = 'flex';
+      }
+    };
+    window.openAdminModal = function() {
+      var m = document.getElementById('admin-modal');
+      if (m) {
+        m.classList.remove('hidden');
+        m.style.display = 'flex';
+      }
+    };
+    window.closeModal = function(id) {
+      var m = document.getElementById(id);
+      if (m) {
+        m.classList.add('hidden');
+        m.style.display = 'none';
+      }
+    };
+  </script>
+
+  <!-- External Production Libraries: PDF.js & JSZip -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+  <!-- Official PayPal JavaScript SDK (Live Production Mode - Dynamic Locale) -->
+  <script id="paypal-sdk-script" src="https://www.paypal.com/sdk/js?client-id=BAAH3baEMQPTTt1CvyGjt7_pmr86LGWmf0MGSaZeNBb3gVYYaydfnSlRAZeWpqI3KmaAyVZWgP0NUwk-Tw&vault=true&intent=subscription&locale=en_US"></script>
+
+  <link rel="stylesheet" href="styles.css?v=5.0.0">
+</head>
+<body>
+  <!-- Ambient Background Lighting -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+
+  <!-- Header / Navigation -->
+  <header class="header">
+    <div class="container header-content">
+      <a href="#" class="logo">
+        <div class="logo-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <span class="logo-text">Statement<span class="gradient-brand">Forge</span> <span class="logo-badge">AI</span></span>
+      </a>
+
+      <nav class="nav-links">
+        <a href="#converter" class="nav-link" data-i18n="nav_converter">Studio</a>
+        <a href="#sample-preview" class="nav-link" data-i18n="nav_preview">Sample Test</a>
+        <a href="#features" class="nav-link" data-i18n="nav_features">Enterprise Features</a>
+        <a href="#supported-banks" class="nav-link" data-i18n="nav_banks">Global Banks</a>
+        <a href="#pricing" class="nav-link" data-i18n="nav_pricing">Pricing</a>
+        <a href="#mypage" id="nav-mypage-link" class="nav-link nav-link-mypage" data-i18n="nav_mypage" onclick="event.preventDefault(); window.openAccountModal && window.openAccountModal(); return false;">마이페이지</a>
+      </nav>
+
+      <div class="header-actions">
+        <!-- Language Switcher -->
+        <div class="lang-switch-dropdown">
+          <button id="lang-menu-btn" class="btn-lang" title="Select Language">
+            <span id="current-lang-flag">🇺🇸</span>
+            <span id="current-lang-code">EN</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div id="lang-dropdown-menu" class="lang-dropdown hidden">
+            <button class="lang-opt" data-lang="en"><span>🇺🇸</span> English (Global)</button>
+            <button class="lang-opt" data-lang="ko"><span>🇰🇷</span> 한국어 (Korean)</button>
+            <button class="lang-opt" data-lang="ja"><span>🇯🇵</span> 日本語 (Japanese)</button>
+            <button class="lang-opt" data-lang="es"><span>🇪🇸</span> Español (Spanish)</button>
+          </div>
+        </div>
+
+        <!-- Tier Status Badge & Quick Plan Switcher -->
+        <div id="user-tier-badge" class="badge-free cursor-pointer" title="내 구독 현황 및 마이페이지 보기" onclick="event.preventDefault(); window.openAccountModal && window.openAccountModal();">
+          <span class="badge-dot"></span>
+          <span id="tier-label">Free: 3 Pages Left</span>
+        </div>
+
+        <button id="nav-upgrade-btn" class="btn btn-primary btn-sm">
+          <span data-i18n="btn_upgrade_nav">Upgrade Plan</span>
+        </button>
+
+        <!-- Admin Operator CRM Trigger (Visible for Admin Operator) -->
+        <button id="nav-admin-btn" class="btn btn-secondary btn-sm hidden" title="Open Customer Management CRM" onclick="event.preventDefault(); window.openAdminModal && window.openAdminModal();">
+          ⚙️ <span data-i18n="btn_nav_crm">Customer CRM</span>
+        </button>
+
+        <!-- Guest: Sign In Button -->
+        <button id="nav-login-btn" class="btn btn-outline btn-sm" onclick="event.preventDefault(); window.openAuthModal && window.openAuthModal('login');">
+          👤 <span data-i18n="btn_nav_signin">Sign In</span>
+        </button>
+
+        <!-- Logged In: Customer Profile Pill (마이페이지 바로가기) -->
+        <button type="button" id="user-profile-btn" class="user-profile-pill hidden" title="마이페이지 & 구독 관리" onclick="event.preventDefault(); window.openAccountModal && window.openAccountModal();">
+          <span class="user-avatar-circle" id="nav-avatar-icon">👤</span>
+          <span class="user-profile-name" id="nav-user-name">Sarah CPA</span>
+          <span class="user-plan-tag" id="nav-user-plan-tag">PRO</span>
+          <span class="mypage-badge" data-i18n="lbl_mypage">마이페이지</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="container">
+      <div class="hero-pill">
+        <span class="pill-badge">v3.5 Engine</span>
+        <span class="pill-text" data-i18n="hero_pill">Autonomous Bank Statement Extraction & Zero-Variance Audit</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </div>
+
+      <h1 class="hero-title">
+        <span data-i18n="hero_title_1">Convert Bank Statements PDF to</span> <br>
+        <span class="gradient-brand" data-i18n="hero_title_2">Excel, CSV & QuickBooks QBO</span>
+      </h1>
+
+      <p class="hero-subtitle" data-i18n="hero_subtitle">
+        Eliminate 3+ hours of manual data entry per client. Upload digital or scanned bank & credit card statements. Our neural OCR extracts clean transaction tables with mathematical balance reconciliation.
+      </p>
+
+      <!-- Main Action Buttons -->
+      <div class="hero-cta-group">
+        <button id="btn-hero-sample-test" class="btn btn-primary btn-lg btn-glow">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+          <span data-i18n="btn_test_sample">Test Live Sample (Instant 1-Click)</span>
+        </button>
+        <button id="btn-hero-upload-trigger" class="btn btn-secondary btn-lg">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          <span data-i18n="btn_upload_own">Upload Your PDF / Scans</span>
+        </button>
+      </div>
+
+      <!-- Trust Badges -->
+      <div class="hero-trust-bar">
+        <div class="trust-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          <span data-i18n="trust_soc2">SOC-2 & 256-bit AES Encryption</span>
+        </div>
+        <div class="trust-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 14 14"></polyline>
+          </svg>
+          <span data-i18n="trust_privacy">Auto-Purge Within 60 Minutes</span>
+        </div>
+        <div class="trust-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          <span data-i18n="trust_reconciliation">100% Mathematical Reconciliation Audit</span>
+        </div>
+      </div>
+
+      <!-- Hero Visual Comparison Showcase -->
+      <div class="hero-showcase-wrapper" id="sample-preview">
+        <div class="showcase-card">
+          <div class="showcase-header">
+            <div class="showcase-tag-left">
+              <span class="dot-red"></span> <span data-i18n="tag_locked_pdf">Locked Raw PDF (Unselectable text & tables)</span>
+            </div>
+            <div class="showcase-tag-center">
+              <span class="sparkle-cyan">✦</span> <span data-i18n="tag_ai_engine">StatementForge Neural OCR & Ledger Engine</span>
+            </div>
+            <div class="showcase-tag-right">
+              <span class="dot-green"></span> <span data-i18n="tag_clean_excel">Structured Excel (.XLSX), CSV & QBO</span>
+            </div>
+          </div>
+
+          <div class="showcase-image-container">
+            <img src="assets/hero-transformation.jpg" alt="Bank Statement PDF to Excel Transformation" class="showcase-img">
+            
+            <div class="showcase-floating-cta">
+              <button id="btn-showcase-trigger" class="btn btn-pro-glow btn-floating">
+                <span>⚡ <span data-i18n="btn_instant_experience">Experience 1-Second Transformation Demo</span></span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Interactive Studio Section -->
+  <section id="converter" class="converter-section">
+    <div class="container converter-container">
+
+      <!-- Enterprise CPA Workspace & Batch Bar (CPA Agency & Pro Integration) -->
+      <div class="workspace-bar">
+        <div class="workspace-left">
+          <div class="client-selector-wrap">
+            <label class="workspace-label" data-i18n="lbl_client_workspace">Client Entity:</label>
+            <select id="client-select" class="client-dropdown">
+              <option value="client_acme">🏢 Acme Global Holdings LLC (US)</option>
+              <option value="client_nova">🚀 Nova SaaS Technologies Inc (US)</option>
+              <option value="client_summit">🏪 Summit Logistics Corp (Global)</option>
+              <option value="client_kr">🇰🇷 넥서스 코리아 주식회사 (KR)</option>
+              <option value="new_client">+ Add New Client Entity...</option>
+            </select>
+          </div>
+
+          <div class="workspace-tools">
+            <button id="btn-open-rules" class="btn-tool-tag" title="Open Custom Tax & Category Rules Engine">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+              <span data-i18n="btn_tax_rules">CPA Tax Rules</span>
+              <span class="badge-tier-req">CPA</span>
+            </button>
+            <button id="btn-open-audit-cert" class="btn-tool-tag" title="Generate IRS / Audit-Ready Balance Certificate">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <span data-i18n="btn_audit_cert">Audit Certificate</span>
+              <span class="badge-tier-req">CPA</span>
+            </button>
+            <button id="btn-open-team" class="btn-tool-tag" title="Manage Team Members & API Keys">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              <span data-i18n="btn_team_api">Team & API</span>
+              <span class="badge-tier-req">CPA</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="workspace-right">
+          <div class="plan-indicator-box">
+            <span class="plan-sub-text" data-i18n="lbl_active_plan">Plan:</span>
+            <strong id="workspace-plan-name">Free Starter</strong>
+            <button id="btn-quick-switch-tier" class="btn-link-action" title="Switch tier for live feature demonstration">
+              [Switch Demo Tier]
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Multi-File Batch Queue Tab Bar (Pro & Agency Feature) -->
+      <div class="batch-queue-bar" id="batch-queue-container">
+        <div class="batch-tabs-label">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+          <span data-i18n="lbl_batch_queue">Batch Queue:</span>
+        </div>
+        <div class="batch-tabs-list" id="batch-tabs-list">
+          <!-- Dynamic batch file chips -->
+        </div>
+        <button id="btn-batch-add-file" class="btn-batch-add" title="Add another PDF to batch queue">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          <span data-i18n="btn_add_to_batch">+ Add PDF to Batch</span>
+        </button>
+      </div>
+      
+      <!-- Top Sample Selector Bar -->
+      <div class="converter-header-bar">
+        <div class="source-selector">
+          <span class="section-label" data-i18n="lbl_select_bank">Select Statement Benchmark:</span>
+          <div class="bank-chips">
+            <button class="bank-chip active" id="chip-chase" data-bank="chase" data-i18n="bank_chip_chase">
+              🏛️ JPMorgan Chase (Commercial Checking)
+            </button>
+            <button class="bank-chip" id="chip-bofa" data-bank="bofa" data-i18n="bank_chip_bofa">
+              🏢 Bank of America (Corporate Operating)
+            </button>
+            <button class="bank-chip" id="chip-amex" data-bank="amex" data-i18n="bank_chip_amex">
+              💳 American Express (Platinum Business)
+            </button>
+            <button class="bank-chip" id="chip-barclays" data-bank="barclays" data-i18n="bank_chip_barclays">
+              🇬🇧 Barclays UK (GBP Business Account)
+            </button>
+            <button class="bank-chip" id="chip-kb" data-bank="kb" data-i18n="bank_chip_kb">
+              🇰🇷 KB Kookmin Bank (KRW Corporate)
+            </button>
+          </div>
+        </div>
+
+        <div class="format-actions">
+          <button id="btn-run-sample-scan" class="btn btn-pro-glow btn-sm">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            <span data-i18n="btn_rescan">Run AI Scan</span>
+          </button>
+          <button id="btn-download-csv" class="btn btn-secondary btn-sm" data-i18n="btn_csv">
+            CSV
+          </button>
+          <button id="btn-download-ofx" class="btn btn-secondary btn-sm" data-i18n="btn_ofx" title="Xero & Sage OFX Format">
+            Xero (.OFX)
+          </button>
+          <button id="btn-download-qbo" class="btn btn-secondary btn-sm" data-i18n="btn_qbo" title="QuickBooks Web Connect (.QBO)">
+            QuickBooks (.QBO)
+          </button>
+          <button id="btn-download-xlsx" class="btn btn-primary btn-sm">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="8" y1="13" x2="16" y2="13"></line>
+              <line x1="8" y1="17" x2="16" y2="17"></line>
+            </svg>
+            <span data-i18n="btn_excel">Excel (.xlsx)</span>
+          </button>
+          <button id="btn-download-batch-zip" class="btn btn-indigo btn-sm" title="Download all batch files in a single ZIP (Pro & CPA)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            <span data-i18n="btn_batch_zip">Batch ZIP</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Split-Screen View: PDF Original (Left) vs Clean Excel Table (Right) -->
+      <div class="studio-split-view">
+        
+        <!-- Left Pane: The Original PDF Bank Statement Document Viewer -->
+        <div class="split-pane-pdf">
+          <div class="pane-header">
+            <div class="pdf-file-info">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="9" y1="15" x2="15" y2="15"></line>
+              </svg>
+              <span id="pdf-doc-title">Chase_Commercial_Dec2025.pdf</span>
+              <span class="badge-pdf-tag" id="pdf-page-count">1 Page PDF</span>
+            </div>
+            <div class="pdf-zoom">100% Native OCR</div>
+          </div>
+
+          <!-- Document Sheet (Simulated Authentic Bank PDF) -->
+          <div class="pdf-sheet" id="pdf-document-sheet">
+            <div class="pdf-laser-scanner" id="laser-scanner"></div>
+
+            <div class="pdf-bank-header">
+              <div class="pdf-logo-mark" id="pdf-bank-logo">🏛️ JPMORGAN CHASE BANK, N.A.</div>
+              <div class="pdf-meta">
+                <div><span data-i18n="pdf_acc_label">Account:</span> <strong id="pdf-acc-num">****8492-04</strong></div>
+                <div><span data-i18n="pdf_period_label">Period:</span> <strong id="pdf-period">2025.12.01 - 2025.12.31</strong></div>
+              </div>
+            </div>
+
+            <div class="pdf-raw-table">
+              <div class="pdf-table-head">
+                <span data-i18n="th_date">Date</span>
+                <span data-i18n="th_desc">Description / Reference</span>
+                <span class="text-right" data-i18n="th_amount">Amount</span>
+                <span class="text-right" data-i18n="th_balance">Balance</span>
+              </div>
+              <div class="pdf-table-rows" id="pdf-raw-rows">
+                <!-- Dynamically populated via app.js -->
+              </div>
+            </div>
+
+            <div class="pdf-watermark-stamp" data-i18n="pdf_watermark">Official Bank Statement Record • Encrypted PDF Stream</div>
+          </div>
+
+          <!-- Upload Dropzone for custom file inside the pane -->
+          <div class="upload-inline" id="pdf-dropzone">
+            <input type="file" id="pdf-file-input" accept=".pdf,image/*,.csv" multiple class="file-hidden">
+            <span data-i18n="dropzone_prompt">Drag & drop your <strong class="text-emerald cursor-pointer">PDF statements or scanned images</strong> here (Supports multi-file batch upload)</span>
+          </div>
+        </div>
+
+        <!-- Right Pane: Extracted Clean Excel Spreadsheet Output -->
+        <div class="split-pane-excel">
+          
+          <!-- Parsing Status Bar & Reconciliation Audit Badge -->
+          <div class="parser-status-bar" id="parser-status">
+            <div class="status-left">
+              <span class="pulse-indicator"></span>
+              <span id="status-text">Active Document: <strong>Chase Commercial Checking (Dec 2025)</strong></span>
+            </div>
+            <div class="status-right">
+              <span class="badge-reconciled" id="reconciled-badge">✓ Reconciled ($0.00 Variance)</span>
+            </div>
+          </div>
+
+          <!-- Mathematical Reconciliation Metric Cards -->
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <span class="metric-title" data-i18n="metric_opening">Opening Balance</span>
+              <span class="metric-value font-mono" id="val-opening-balance">$14,250.00</span>
+              <span class="metric-sub" data-i18n="metric_opening_sub">Statement starting line</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-title" data-i18n="metric_deposits">Total Credits (Deposits)</span>
+              <span class="metric-value font-mono text-emerald" id="val-total-deposits">+$28,400.50</span>
+              <span class="metric-sub" id="count-deposits">8 Credits</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-title" data-i18n="metric_withdrawals">Total Debits (Withdrawals)</span>
+              <span class="metric-value font-mono text-rose" id="val-total-withdrawals">-$16,842.15</span>
+              <span class="metric-sub" id="count-withdrawals">14 Debits</span>
+            </div>
+            <div class="metric-card highlight-card">
+              <span class="metric-title" data-i18n="metric_closing">Closing Balance (Reconciled)</span>
+              <span class="metric-value font-mono text-cyan" id="val-closing-balance">$25,808.35</span>
+              <span class="metric-sub text-emerald" id="sub-variance-status">Zero-Variance Verified</span>
+            </div>
+          </div>
+
+          <!-- Interactive Spreadsheet Data Table (with in-cell editing & category badges) -->
+          <div class="spreadsheet-wrapper">
+            <div class="table-toolbar">
+              <div class="table-search">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="table-search-input" data-i18n-ph="search_placeholder" placeholder="Search payee, keyword, amount, category...">
+              </div>
+              <div class="table-tools">
+                <button id="btn-add-row" class="btn-table-tool" title="Add a transaction row">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  <span data-i18n="btn_add_row">+ Add Row</span>
+                </button>
+                <span class="tool-count" id="rows-count-indicator">12 Transactions (Double-click any cell to edit)</span>
+              </div>
+            </div>
+
+            <div class="table-scroll-container">
+              <table class="fintech-table" id="data-table">
+                <thead>
+                  <tr>
+                    <th width="105" data-i18n="th_date">Date</th>
+                    <th data-i18n="th_desc">Payee / Description</th>
+                    <th width="145" data-i18n="th_category">AI Category / Tax</th>
+                    <th width="115" class="text-right" data-i18n="th_debit">Debit (-)</th>
+                    <th width="115" class="text-right" data-i18n="th_credit">Credit (+)</th>
+                    <th width="115" class="text-right" data-i18n="th_balance">Balance</th>
+                    <th width="50" class="text-center" data-i18n="th_act">Act</th>
+                  </tr>
+                </thead>
+                <tbody id="table-body">
+                  <!-- Dynamically populated via app.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Pro / Agency Banner below table -->
+      <div class="pro-upsell-banner">
+        <div class="upsell-text">
+          <h4 data-i18n="upsell_title">Need Multi-File Batch Conversion, QuickBooks QBO or Custom Tax Rules?</h4>
+          <p data-i18n="upsell_desc">Trusted by 14,000+ CPAs, CFOs, and bookkeeping firms globally to eliminate tedious data transcription.</p>
+        </div>
+        <button id="banner-pro-btn" class="btn btn-pro-glow">
+          ⚡ <span data-i18n="btn_upgrade_pro_glow">Upgrade to Pro ($19/mo)</span>
+        </button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- How It Works: 3 Steps -->
+  <section class="how-it-works-section">
+    <div class="container">
+      <div class="section-badge" data-i18n="badge_how_it_works">Autonomous 3-Step Pipeline</div>
+      <h2 class="section-title" data-i18n="title_how_it_works">How StatementForge Converts Statements</h2>
+      
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <h3 class="step-title" data-i18n="step_1_title">Upload PDF / Scanned Images</h3>
+          <p class="step-text" data-i18n="step_1_desc">Upload digital e-statements from online banking or scanned phone photos of paper receipts.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <h3 class="step-title" data-i18n="step_2_title">Neural OCR & Ledger Reconciliation</h3>
+          <p class="step-text" data-i18n="step_2_desc">Our engine extracts columns, categorizes payees, and mathematically tests Opening + Credits - Debits == Closing.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <h3 class="step-title" data-i18n="step_3_title">Export to Excel, QBO or Xero</h3>
+          <p class="step-text" data-i18n="step_3_desc">Download structured Excel with live SUM formulas, Intuit QuickBooks Web Connect (.QBO), or Xero (.OFX).</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Supported Banks Grid -->
+  <section id="supported-banks" class="banks-section">
+    <div class="container">
+      <div class="section-badge" data-i18n="badge_supported_banks">Global Compatibility</div>
+      <h2 class="section-title" data-i18n="title_supported_banks">Compatible with 1,000+ Worldwide Financial Institutions</h2>
+      <p class="section-desc" data-i18n="desc_supported_banks">Multi-column layouts, skewed scans, rotated tables, and dual-currency credit card slips parsed automatically.</p>
+
+      <div class="banks-grid">
+        <div class="bank-pill">🏛️ JPMorgan Chase</div>
+        <div class="bank-pill">🏢 Bank of America</div>
+        <div class="bank-pill">💳 American Express</div>
+        <div class="bank-pill">🏛️ Wells Fargo</div>
+        <div class="bank-pill">🇬🇧 Barclays UK</div>
+        <div class="bank-pill">🌍 HSBC Global</div>
+        <div class="bank-pill">🏛️ Citibank N.A.</div>
+        <div class="bank-pill">📱 PayPal Business</div>
+        <div class="bank-pill">💳 Stripe Invoices</div>
+        <div class="bank-pill">🌐 Wise & Revolut</div>
+        <div class="bank-pill">🇰🇷 KB국민은행 / 신한은행</div>
+        <div class="bank-pill">🇯🇵 三菱UFJ / みずほ銀行</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Transparent Pricing Section -->
+  <section id="pricing" class="pricing-section">
+    <div class="container">
+      <div class="section-badge" data-i18n="badge_pricing">Transparent Global Pricing</div>
+      <h2 class="section-title"><span data-i18n="title_pricing_1">Save Over 20+ Hours Every Month with</span> <span class="gradient-brand" data-i18n="title_pricing_2">Guaranteed Accuracy</span></h2>
+      <p class="section-desc" data-i18n="desc_pricing">Start with 3 free pages. Upgrade anytime to Pro or Accounting Firm for high-volume batch processing.</p>
+
+      <div class="pricing-grid">
+        
+        <!-- Free Starter -->
+        <div class="pricing-card" id="card-plan-free">
+          <div class="pricing-header">
+            <h3 class="plan-name" data-i18n="plan_free_name">Free Starter</h3>
+            <p class="plan-tagline" data-i18n="plan_free_tagline">Test extraction accuracy & reconciliation</p>
+            <div class="price-wrap">
+              <span class="price-currency">$</span>
+              <span class="price-val">0</span>
+              <span class="price-period" data-i18n="period_free">/ Forever Free</span>
+            </div>
+          </div>
+          <ul class="pricing-features">
+            <li><span class="check">✓</span> <span data-i18n="f_free_1">3 Pages / Month Included</span></li>
+            <li><span class="check">✓</span> <span data-i18n="f_free_2">Clean Excel (.xlsx) & CSV Export</span></li>
+            <li><span class="check">✓</span> <span data-i18n="f_free_3">Mathematical Reconciliation Audit</span></li>
+            <li><span class="check">✓</span> <span data-i18n="f_free_4">In-Cell Table Editing</span></li>
+            <li class="disabled"><span class="cross">✕</span> <span data-i18n="f_free_5">Multi-File Batch Queue</span></li>
+            <li class="disabled"><span class="cross">✕</span> <span data-i18n="f_free_6">QuickBooks (.QBO) & Xero (.OFX)</span></li>
+            <li class="disabled"><span class="cross">✕</span> <span data-i18n="f_free_7">CPA Tax Rules & Custom Mapping</span></li>
+            <li class="disabled"><span class="cross">✕</span> <span data-i18n="f_free_8">Multi-Client Workspaces</span></li>
+          </ul>
+          <button id="btn-select-free" class="btn btn-outline btn-block" data-i18n="btn_use_free">Current Plan</button>
+        </div>
+
+        <!-- Pro Plan (Most Popular) -->
+        <div class="pricing-card featured" id="card-plan-pro">
+          <div class="popular-ribbon" data-i18n="ribbon_pro">MOST POPULAR • FREELANCERS & SMBS</div>
+          <div class="pricing-header">
+            <h3 class="plan-name" data-i18n="plan_pro_name">Pro Monthly</h3>
+            <p class="plan-tagline" data-i18n="plan_pro_tagline">Save 10+ hours of tedious monthly bookkeeping</p>
+            <div class="price-wrap">
+              <span class="price-currency">$</span>
+              <span class="price-val">19</span>
+              <span class="price-period" data-i18n="period_pro">/ Month (PayPal Sub)</span>
+            </div>
+          </div>
+          <ul class="pricing-features">
+            <li><span class="check">✓</span> <strong><span data-i18n="f_pro_1">250 Pages / Month Volume</span></strong></li>
+            <li><span class="check">✓</span> <strong><span data-i18n="f_pro_2">QuickBooks (.QBO) Web Connect Export</span></strong></li>
+            <li><span class="check">✓</span> <strong><span data-i18n="f_pro_3">Xero & Sage (.OFX) Standard Format</span></strong></li>
+            <li><span class="check">✓</span> <span data-i18n="f_pro_4">Multi-File Batch Processing Queue</span></li>
+            <li><span class="check">✓</span> <span data-i18n="f_pro_5">AI Payee Categorization & Tax Tagging</span></li>
+            <li><span class="check">✓</span> <span data-i18n="f_pro_6">Zero-Variance Audit Discrepancy Alert</span></li>
+            <li><span class="check">✓</span> <span data-i18n="f_pro_7">Priority OCR Engine (Zero Wait Time)</span></li>
+            <li class="disabled"><span class="cross">✕</span> <span data-i18n="f_pro_8">Multi-Client Workspaces & Team Seats</span></li>
+          </ul>
+          <button id="btn-buy-pro" class="btn btn-primary btn-block btn-glow">
+            <span data-i18n="btn_buy_pro">Get Pro Plan ($19/mo)</span>
+          </button>
+        </div>
+
+        <!-- Accounting Firm / CPA Enterprise Plan -->
+        <div class="pricing-card" id="card-plan-agency">
+          <div class="pricing-header">
+            <h3 class="plan-name" data-i18n="plan_agency_name">CPA & Accounting Firm</h3>
+            <p class="plan-tagline" data-i18n="plan_agency_tagline">For CPAs, Bookkeeping Agencies & Multi-Entity Firms</p>
+            <div class="price-wrap">
+              <span class="price-currency">$</span>
+              <span class="price-val">49</span>
+              <span class="price-period" data-i18n="period_agency">/ Month</span>
+            </div>
+          </div>
+          <ul class="pricing-features">
+            <li><span class="check">✓</span> <strong><span data-i18n="f_agency_1">1,500 Pages / Month High Volume</span></strong></li>
+            <li><span class="check">✓</span> <strong><span data-i18n="f_agency_2">Multi-Client Workspace Management</span></strong></li>
+            <li><span class="check">✓</span> <strong><span data-i18n="f_agency_3">Custom CPA Tax Rules Engine (IRS / Deductions)</span></strong></li>
+            <li><span class="check">✓</span> <strong><span data-i18n="f_agency_4">Bulk Multi-File Batch ZIP Export</span></strong></li>
+            <li><span class="check">✓</span> <strong><span data-i18n="f_agency_5">Downloadable Audit-Ready Certificates</span></strong></li>
+            <li><span class="check">✓</span> <span data-i18n="f_agency_6">3 Accountant Team Seats & Shared Rules</span></li>
+            <li><span class="check">✓</span> <span data-i18n="f_agency_7">Enterprise REST API Key Access</span></li>
+            <li><span class="check">✓</span> <span data-i18n="f_agency_8">Dedicated Account Manager & Priority SLA</span></li>
+          </ul>
+          <button id="btn-buy-agency" class="btn btn-secondary btn-block">
+            <span data-i18n="btn_buy_agency">Get CPA Firm Plan ($49/mo)</span>
+          </button>
+        </div>
+
+      </div>
+
+      <div class="guarantee-box">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        <span data-i18n="txt_guarantee"><strong>100% Mathematical Accuracy Guarantee:</strong> If our extracted ending balance does not match your original statement, we offer an immediate full refund.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Loading & Processing Modal (4 Stages Animation) -->
+  <div id="loading-modal" class="modal-overlay hidden">
+    <div class="loading-card">
+      <div class="loading-spinner-wrap">
+        <div class="loading-ring"></div>
+        <div class="loading-icon" id="loading-stage-icon">⚡</div>
+      </div>
+      <h3 id="loading-title">Extracting Financial Data</h3>
+      <p id="loading-subtitle">Neural OCR is detecting table columns and payee descriptions...</p>
+      
+      <!-- Progress Bar -->
+      <div class="loading-progress-bar">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <div class="loading-percent" id="loading-percent">0%</div>
+
+      <div class="loading-steps">
+        <div class="step-indicator active" id="lstep-1">1. PDF Stream OCR</div>
+        <div class="step-indicator" id="lstep-2">2. Column Alignment</div>
+        <div class="step-indicator" id="lstep-3">3. Balance Reconciliation</div>
+        <div class="step-indicator" id="lstep-4">4. Excel & QBO Ready</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PayPal Checkout / Plan Upgrade Modal -->
+  <div id="checkout-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <button id="modal-close-btn" class="modal-close">&times;</button>
+      
+      <div class="modal-header">
+        <div class="modal-icon">💳</div>
+        <h3 id="modal-title" data-i18n="checkout_title">Upgrade to StatementForge Pro</h3>
+        <p id="modal-subtitle" data-i18n="checkout_subtitle">Eliminate manual bookkeeping and unlock batch workflows.</p>
+      </div>
+
+      <div class="modal-order-summary">
+        <div class="summary-row">
+          <span id="selected-plan-name" data-i18n="checkout_plan_name">Pro Monthly Subscription</span>
+          <strong id="selected-plan-price">$19.00 / month</strong>
+        </div>
+        <div class="summary-details" id="modal-plan-features">
+          <!-- Populated dynamically via app.js -->
+        </div>
+      </div>
+
+      <!-- Real-time PayPal Container / Action -->
+      <div class="paypal-container">
+        <!-- Live PayPal Loading indicator (hidden once rendered) -->
+        <div id="paypal-loading-notice" class="paypal-loading-placeholder hidden">
+          <span id="paypal-loading-text">🔄 Loading Official PayPal Smart Buttons...</span>
+        </div>
+
+        <!-- Live PayPal Smart Button target container -->
+        <div id="paypal-smart-button-container"></div>
+
+        <div id="paypal-button-area">
+          <button id="paypal-trigger-btn" class="btn btn-paypal btn-block">
+            <span class="paypal-logo">Pay<i>Pal</i></span> <span id="paypal-btn-text" data-i18n="paypal_btn_subscribe">Subscribe with PayPal</span>
+          </button>
+        </div>
+        <div class="secure-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          <span id="paypal-secure-text" data-i18n="paypal_secure_text">Bank-Grade 256-Bit SSL • Official PayPal Merchant Pipeline</span>
+        </div>
+      </div>
+
+      <div class="modal-footer-note">
+        <button id="btn-simulate-success" class="btn-link-subtle" data-i18n="paypal_sandbox_sim">
+          [Instant Sandbox Verification: Click to Simulate Approved Payment & Activate Plan]
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CPA Custom Tax & Category Rules Engine Modal -->
+  <div id="rules-modal" class="modal-overlay hidden">
+    <div class="modal-card modal-large">
+      <button id="rules-close-btn" class="modal-close">&times;</button>
+      
+      <div class="modal-header">
+        <div class="modal-icon">⚙️</div>
+        <h3 data-i18n="rules_modal_title">CPA Custom Tax & Category Rules Engine</h3>
+        <p data-i18n="rules_modal_sub">Define automated regex and keyword mapping rules for IRS deductions & custom chart of accounts.</p>
+      </div>
+
+      <div class="rules-list-container">
+        <table class="rules-table">
+          <thead>
+            <tr>
+              <th width="35%" data-i18n="rules_th_pattern">Vendor / Payee Keyword Pattern</th>
+              <th width="35%" data-i18n="rules_th_target">Target Tax Line / Chart of Accounts</th>
+              <th width="20%" data-i18n="rules_th_deduct">Tax Deductibility</th>
+              <th width="10%" data-i18n="rules_th_act">Action</th>
+            </tr>
+          </thead>
+          <tbody id="rules-table-body">
+            <!-- Dynamically populated via app.js -->
+          </tbody>
+        </table>
+
+        <!-- Add Rule Form -->
+        <div class="add-rule-bar">
+          <input type="text" id="rule-keyword-input" placeholder="e.g. AWS|Google Cloud|Azure" class="rule-input">
+          <input type="text" id="rule-category-input" placeholder="e.g. IRS Schedule C Line 27 (Cloud Computing)" class="rule-input">
+          <select id="rule-deduct-select" class="rule-select">
+            <option value="100%">100% Deductible</option>
+            <option value="50%">50% Meals/Travel</option>
+            <option value="0%">Non-Deductible</option>
+          </select>
+          <button id="btn-add-rule" class="btn btn-secondary btn-sm" data-i18n="rules_btn_add">+ Add Rule</button>
+        </div>
+      </div>
+
+      <div class="modal-footer-actions">
+        <button id="btn-apply-cpa-rules" class="btn btn-primary btn-glow" data-i18n="rules_btn_apply">
+          ⚡ Apply Rules & Reclassify All Transactions Now
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Official CPA Reconciliation Audit Certificate Modal -->
+  <div id="audit-cert-modal" class="modal-overlay hidden">
+    <div class="modal-card modal-large">
+      <button id="audit-close-btn" class="modal-close">&times;</button>
+      
+      <div class="audit-certificate-paper" id="printable-cert">
+        <div class="cert-header">
+          <div class="cert-seal">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <polyline points="9 12 11 14 15 10"></polyline>
+            </svg>
+          </div>
+          <div>
+            <h2 data-i18n="cert_title">STATEMENT RECONCILIATION AUDIT CERTIFICATE</h2>
+            <p class="cert-sub" data-i18n="cert_sub">IRS & GAAP Accounting Compliance Verification &bull; StatementForge AI Ledger</p>
+          </div>
+        </div>
+
+        <div class="cert-grid">
+          <div><strong data-i18n="cert_lbl_client">Client Entity:</strong> <span id="cert-client-name">Acme Global Holdings LLC</span></div>
+          <div><strong data-i18n="cert_lbl_bank">Financial Institution:</strong> <span id="cert-bank-name">JPMorgan Chase Bank, N.A.</span></div>
+          <div><strong data-i18n="cert_lbl_acc">Account Identifier:</strong> <span id="cert-account-id">****8492-04</span></div>
+          <div><strong data-i18n="cert_lbl_period">Statement Period:</strong> <span id="cert-period">2025.12.01 - 2025.12.31</span></div>
+          <div><strong data-i18n="cert_lbl_hash">Document SHA-256 Hash:</strong> <code id="cert-hash">7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069</code></div>
+          <div><strong data-i18n="cert_lbl_time">Audit Timestamp:</strong> <span id="cert-timestamp">2026-10-16 00:45:00 UTC</span></div>
+        </div>
+
+        <div class="cert-math-box">
+          <div class="math-row">
+            <span data-i18n="cert_lbl_opening">Opening Balance:</span>
+            <strong id="cert-opening">$14,250.00</strong>
+          </div>
+          <div class="math-row">
+            <span data-i18n="cert_lbl_credits">+ Total Credits (Deposits):</span>
+            <strong class="text-emerald" id="cert-credits">+$28,400.50</strong>
+          </div>
+          <div class="math-row">
+            <span data-i18n="cert_lbl_debits">- Total Debits (Withdrawals):</span>
+            <strong class="text-rose" id="cert-debits">-$16,842.15</strong>
+          </div>
+          <div class="math-divider"></div>
+          <div class="math-row math-highlight">
+            <span data-i18n="cert_lbl_closing">Calculated Closing Balance:</span>
+            <strong class="text-cyan" id="cert-closing">$25,808.35</strong>
+          </div>
+          <div class="math-row">
+            <span data-i18n="cert_lbl_stated">Stated Statement Closing Balance:</span>
+            <strong id="cert-stated">$25,808.35</strong>
+          </div>
+          <div class="math-row cert-verdict">
+            <span data-i18n="cert_lbl_variance">Audit Mathematical Variance:</span>
+            <strong class="text-emerald" id="cert-variance">$0.00 (100% RECONCILED & BALANCED)</strong>
+          </div>
+        </div>
+
+        <div class="cert-footer">
+          <div class="cert-sign">
+            <div class="sign-line"></div>
+            <span data-i18n="cert_sign_text">Certified Public Accountant (CPA) / Auditor Sign-off</span>
+          </div>
+          <div class="cert-badge-official">
+            <span data-i18n="cert_official_badge">VERIFIED ZERO-DISCREPANCY</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer-actions">
+        <button id="btn-print-cert" class="btn btn-secondary" data-i18n="btn_print_cert">
+          🖨️ Print / Save as PDF
+        </button>
+        <button id="btn-download-cert-csv" class="btn btn-primary" data-i18n="btn_download_cert_json">
+          Download Verification JSON/CSV
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CPA Team & API Key Management Modal -->
+  <div id="team-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <button id="team-close-btn" class="modal-close">&times;</button>
+      
+      <div class="modal-header">
+        <div class="modal-icon">👥</div>
+        <h3 data-i18n="team_modal_title">CPA Team Seats & API Integration</h3>
+        <p data-i18n="team_modal_sub">Manage accounting team access and programmatic REST API keys.</p>
+      </div>
+
+      <div class="team-section">
+        <h4 data-i18n="team_seats_h4">Firm Team Seats (3 / 3 Active)</h4>
+        <div class="team-members-list">
+          <div class="team-member-item">
+            <div class="member-avatar">SC</div>
+            <div class="member-info">
+              <strong>Sarah Chen, CPA</strong>
+              <span>Managing Partner &bull; Primary Admin</span>
+            </div>
+            <span class="member-role badge-admin">Admin</span>
+          </div>
+          <div class="team-member-item">
+            <div class="member-avatar">MK</div>
+            <div class="member-info">
+              <strong>Marcus Kim</strong>
+              <span>Senior Bookkeeper &bull; Tax Team</span>
+            </div>
+            <span class="member-role">Editor</span>
+          </div>
+          <div class="team-member-item">
+            <div class="member-avatar">ER</div>
+            <div class="member-info">
+              <strong>Elena Rodriguez</strong>
+              <span>Staff Auditor &bull; Multi-Client Access</span>
+            </div>
+            <span class="member-role">Editor</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="api-section">
+        <h4 data-i18n="team_api_h4">Enterprise REST API Key</h4>
+        <p class="api-sub" data-i18n="team_api_sub">Integrate StatementForge OCR directly into your custom accounting ERP or Zapier.</p>
+        <div class="api-key-box">
+          <code id="api-key-display">sf_live_94820491823901928402acme</code>
+          <button id="btn-copy-api-key" class="btn-copy-key" data-i18n="btn_copy_key">Copy</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Demo Tier Switcher Modal -->
+  <div id="tier-switcher-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <button id="switcher-close-btn" class="modal-close" onclick="window.closeModal && window.closeModal('tier-switcher-modal');">&times;</button>
+      
+      <div class="modal-header">
+        <div class="modal-icon">⚡</div>
+        <h3 data-i18n="switcher_modal_title">Interactive Demo: Instant Tier Switcher</h3>
+        <p data-i18n="switcher_modal_sub">Switch between plan tiers instantly to inspect all gated and unlocked features.</p>
+      </div>
+
+      <div class="tier-picker-grid">
+        <button class="tier-picker-card" data-tier="free">
+          <h4 data-i18n="switcher_card_free_title">Free Starter</h4>
+          <p data-i18n="switcher_card_free_desc">3 pages limit, single file upload, CSV & Excel export.</p>
+          <span class="tier-tag" data-i18n="switcher_card_free_tag">Active by default</span>
+        </button>
+        <button class="tier-picker-card featured" data-tier="pro">
+          <h4 data-i18n="switcher_card_pro_title">Pro Monthly ($19/mo)</h4>
+          <p data-i18n="switcher_card_pro_desc">250 pages, Multi-file batch queue, QBO, Xero OFX, In-cell editor.</p>
+          <span class="tier-tag" data-i18n="switcher_card_pro_tag">Popular Freelancers</span>
+        </button>
+        <button class="tier-picker-card" data-tier="agency">
+          <h4 data-i18n="switcher_card_agency_title">CPA Firm ($49/mo)</h4>
+          <p data-i18n="switcher_card_agency_desc">1,500 pages, Multi-Client selector, Custom Tax Rules, Batch ZIP, Audit Certs.</p>
+          <span class="tier-tag" data-i18n="switcher_card_agency_tag">CPA Enterprises</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1. Authentication Modal (Sign In / Register) -->
+  <div id="auth-modal" class="modal-overlay hidden">
+    <div class="modal-card auth-modal-card">
+      <button id="auth-modal-close" class="modal-close" onclick="window.closeModal && window.closeModal('auth-modal');">&times;</button>
+      
+      <div class="modal-header">
+        <div class="modal-icon auth-icon">🔐</div>
+        <h3 id="auth-modal-title" data-i18n="auth_title">Sign in to StatementForge</h3>
+        <p id="auth-modal-sub" data-i18n="auth_subtitle">Manage your subscription, transaction history, and API keys.</p>
+      </div>
+
+      <!-- Auth Mode Switcher Tabs -->
+      <div class="auth-tabs">
+        <button type="button" id="tab-login" class="auth-tab active" data-i18n="tab_login">Sign In</button>
+        <button type="button" id="tab-signup" class="auth-tab" data-i18n="tab_signup">Create Account</button>
+      </div>
+
+      <!-- 1-Click Google Sign In Simulation -->
+      <button type="button" id="btn-google-auth" class="btn btn-social-google">
+        <svg width="18" height="18" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+        </svg>
+        <span data-i18n="auth_google_continue">Continue with Google (1-Click)</span>
+      </button>
+
+      <div class="auth-divider">
+        <span data-i18n="auth_or">or continue with email</span>
+      </div>
+
+      <!-- Sign In Form -->
+      <form id="form-login" class="auth-form">
+        <div class="auth-group">
+          <label for="login-email" data-i18n="auth_email">Work Email</label>
+          <input type="email" id="login-email" class="auth-input" placeholder="sarah@accounting.com" required>
+        </div>
+        <div class="auth-group">
+          <label for="login-password" data-i18n="auth_password">Password</label>
+          <input type="password" id="login-password" class="auth-input" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" data-i18n="btn_submit_login">Sign In to Dashboard</button>
+      </form>
+
+      <!-- Sign Up Form (hidden by default) -->
+      <form id="form-signup" class="auth-form hidden">
+        <div class="auth-group">
+          <label for="signup-name" data-i18n="auth_name">Full Name</label>
+          <input type="text" id="signup-name" class="auth-input" placeholder="Sarah Jenkins, CPA" required>
+        </div>
+        <div class="auth-group">
+          <label for="signup-email" data-i18n="auth_email">Work Email</label>
+          <input type="email" id="signup-email" class="auth-input" placeholder="sarah@accounting.com" required>
+        </div>
+        <div class="auth-group">
+          <label for="signup-password" data-i18n="auth_password">Create Password</label>
+          <input type="password" id="signup-password" class="auth-input" placeholder="At least 6 characters" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" data-i18n="btn_submit_signup">Create Free Account</button>
+      </form>
+
+      <!-- Quick Test Accounts Row -->
+      <div class="demo-auth-box">
+        <div class="demo-auth-title" data-i18n="auth_quick_demo">Instant Demo Accounts (Click to Test):</div>
+        <div class="demo-auth-btns">
+          <button type="button" class="btn-demo-chip" id="chip-demo-admin" title="Admin Operator with CRM Access">
+            👑 <span>Admin (Operator)</span>
+          </button>
+          <button type="button" class="btn-demo-chip" id="chip-demo-pro" title="Subscribed Pro Customer">
+            💼 <span>Sarah CPA (Pro)</span>
+          </button>
+          <button type="button" class="btn-demo-chip" id="chip-demo-agency" title="Subscribed CPA Enterprise Firm">
+            🏢 <span>David EA (Firm)</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Customer Account Portal Modal (My Account) -->
+  <div id="account-modal" class="modal-overlay hidden">
+    <div class="modal-card account-modal-card">
+      <button id="account-modal-close" class="modal-close" onclick="window.closeModal && window.closeModal('account-modal');">&times;</button>
+      
+      <div class="account-profile-header">
+        <div class="account-avatar-large" id="acc-avatar">👤</div>
+        <div class="account-info-main">
+          <div class="account-name-row">
+            <h3 id="acc-user-name">Sarah Jenkins, CPA</h3>
+            <span id="acc-role-badge" class="acc-badge">Customer</span>
+          </div>
+          <p id="acc-user-email">sarah.cpa@summitaccounting.com</p>
+          <span class="acc-joined-date" id="acc-joined">Member since: Oct 2026</span>
+        </div>
+      </div>
+
+      <!-- Active Subscription Details Card -->
+      <div class="account-plan-card">
+        <div class="plan-card-top">
+          <div>
+            <span class="plan-card-label" data-i18n="acc_active_subscription">Active Subscription</span>
+            <h4 id="acc-plan-title">Pro Monthly ($19/mo)</h4>
+          </div>
+          <span id="acc-status-tag" class="acc-status-tag active">ACTIVE 🟢</span>
+        </div>
+
+        <div class="plan-meta-grid">
+          <div class="meta-item">
+            <span class="meta-label" data-i18n="acc_paypal_sub_id">PayPal Subscription ID</span>
+            <div class="sub-id-copy-wrap">
+              <span class="meta-val mono" id="acc-sub-id">I-LIVE-PRO-88912</span>
+              <button type="button" id="btn-copy-sub-id" class="btn-icon-tiny" title="Copy Subscription ID">📋</button>
+            </div>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label" data-i18n="acc_renewal_date">Next Billing Cycle</span>
+            <span class="meta-val" id="acc-renewal-date">Nov 18, 2026</span>
+          </div>
+        </div>
+
+        <!-- Quota Usage Progress -->
+        <div class="quota-progress-section">
+          <div class="quota-progress-header">
+            <span data-i18n="acc_monthly_quota">Monthly Conversion Quota</span>
+            <strong id="acc-quota-numbers">215 / 250 Pages Remaining</strong>
+          </div>
+          <div class="quota-bar-track">
+            <div class="quota-bar-fill" id="acc-quota-bar" style="width: 86%;"></div>
+          </div>
+        </div>
+
+        <div class="plan-card-actions">
+          <a id="acc-manage-paypal-btn" href="https://www.paypal.com/myaccount/autopay/" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm">
+            💳 <span data-i18n="acc_btn_manage_paypal">Manage / Cancel on PayPal</span>
+          </a>
+          <button type="button" id="acc-change-plan-btn" class="btn btn-primary btn-sm">
+            ⚡ <span data-i18n="acc_btn_change_plan">Upgrade / Change Plan</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Account Actions Footer -->
+      <div class="account-modal-footer">
+        <button type="button" id="acc-admin-portal-btn" class="btn btn-secondary btn-sm hidden">
+          ⚙️ <span data-i18n="btn_admin_crm">Open Operator CRM</span>
+        </button>
+        <button type="button" id="acc-signout-btn" class="btn btn-outline btn-sm text-danger">
+          🚪 <span data-i18n="btn_signout">Sign Out</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Operator Customer CRM Management Panel Modal -->
+  <div id="admin-modal" class="modal-overlay hidden">
+    <div class="modal-card admin-modal-card">
+      <button id="admin-modal-close" class="modal-close" onclick="window.closeModal && window.closeModal('admin-modal');">&times;</button>
+      
+      <div class="admin-crm-header">
+        <div class="modal-icon admin-icon">💼</div>
+        <div class="admin-crm-header-text">
+          <h3 data-i18n="crm_title">Customer & Subscription Management CRM</h3>
+          <p data-i18n="crm_subtitle">Real-time subscriber management, PayPal billing sync, quota provisioning, and CSV ledger export.</p>
+        </div>
+      </div>
+
+      <!-- CRM Metric Highlights -->
+      <div class="crm-metrics-grid">
+        <div class="crm-metric-card">
+          <span class="crm-metric-label" data-i18n="crm_mrr">Monthly Recurring Revenue</span>
+          <div class="crm-metric-val" id="crm-stat-mrr">$38,740</div>
+          <span class="crm-metric-sub">↑ 24% vs last month</span>
+        </div>
+        <div class="crm-metric-card">
+          <span class="crm-metric-label" data-i18n="crm_active_subscribers">Paid Active Subscribers</span>
+          <div class="crm-metric-val" id="crm-stat-subs">1,489</div>
+          <span class="crm-metric-sub">Pro: 1,124 | CPA: 365</span>
+        </div>
+        <div class="crm-metric-card">
+          <span class="crm-metric-label" data-i18n="crm_pages_extracted">Pages Extracted (M-T-D)</span>
+          <div class="crm-metric-val" id="crm-stat-pages">184,200</div>
+          <span class="crm-metric-sub">Zero-Variance Acc: 99.98%</span>
+        </div>
+      </div>
+
+      <!-- CRM Table Controls -->
+      <div class="crm-controls-bar">
+        <div class="crm-search-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="crm-search-input" placeholder="Search customer by email, name or PayPal ID..." class="crm-search-input">
+        </div>
+        <div class="crm-actions">
+          <button type="button" id="btn-crm-add-user" class="btn btn-secondary btn-sm">
+            + <span data-i18n="crm_add_customer">Add Customer</span>
+          </button>
+          <button type="button" id="btn-crm-export-csv" class="btn btn-primary btn-sm">
+            📥 <span data-i18n="crm_export_csv">Export Subscriber CSV</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Subscribers Table -->
+      <div class="crm-table-container">
+        <table class="crm-table">
+          <thead>
+            <tr>
+              <th>Customer</th>
+              <th>Plan Tier</th>
+              <th>PayPal Subscription ID</th>
+              <th>Quota (Pages)</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="crm-subscribers-tbody">
+            <!-- Dynamically populated via app.js -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="crm-footer-summary">
+        <span id="crm-table-count">Showing 3 registered customers</span>
+        <span class="crm-sync-badge">🟢 PayPal Webhooks & Live Subscription Status Connected</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast hidden">
+    <span id="toast-message">Action successful!</span>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-content">
+      <div class="footer-left">
+        <div class="logo">
+          <div class="logo-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <span class="logo-text">Statement<span class="gradient-brand">Forge</span> AI</span>
+        </div>
+        <p class="footer-tagline">Autonomous bank statement PDF to Excel, CSV & QBO engine trusted by 14,000+ financial professionals globally.</p>
+      </div>
+
+      <div class="footer-right">
+        <div class="footer-links">
+          <a href="#mypage" id="footer-mypage-link" class="footer-link" data-i18n="nav_mypage" onclick="event.preventDefault(); window.openAccountModal && window.openAccountModal(); return false;">마이페이지</a>
+          <span>&bull;</span>
+          <span>SOC-2 Certified</span>
+          <span>&bull;</span>
+          <span>GDPR Compliant</span>
+          <span>&bull;</span>
+          <span>256-bit AES</span>
+        </div>
+        <span class="footer-copy">&copy; 2026 StatementForge Inc. All rights reserved. Global FinTech Engine.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js?v=5.0.0"></script>
+</body>
+</html>

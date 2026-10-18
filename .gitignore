@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+.env
+.env.local
+
+# Temporary / Scratch Test Scripts
+scratch/
+.temp/
+*.log
+
+# OS & Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
