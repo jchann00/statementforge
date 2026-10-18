@@ -1,0 +1,9 @@
+{
+  "name": "statementforge",
+  "version": "5.0.0",
+  "description": "StatementForge AI - Autonomous FinTech Bank Statement PDF to Excel, CSV & QBO Engine",
+  "private": true,
+  "scripts": {
+    "build": "node build.js"
+  }
+}

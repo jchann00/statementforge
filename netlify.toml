@@ -1,9 +1,8 @@
 # Netlify Configuration for StatementForge AI SaaS Platform
 
 [build]
-  # Pure static FinTech web application
-  command = ""
-  publish = "."
+  command = "node build.js"
+  publish = "dist"
 
 # SPA Routing: Ensure all subpaths, hashes, and client routes fall back to index.html with HTTP 200
 [[redirects]]
